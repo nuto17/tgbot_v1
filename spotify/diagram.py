@@ -1,6 +1,6 @@
-import matplotlib.pyplot as dig
+#import matplotlib.pyplot as dig
 
-async def create_diag(data,file_path='spotify_chart.png'):
+#sync def create_diag(data,file_path='spotify_chart.png'):
     artists = [item['artist_name'] for item in data]
     popularities=[item['popularity'] for item in data]
     

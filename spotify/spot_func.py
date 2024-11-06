@@ -1,5 +1,5 @@
-import spotipy
-from spotipy.oauth2 import SpotifyOAuth
+#import spotipy
+#rom spotipy.oauth2 import SpotifyOAuth
 
 sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
     client_id="e5c7d1f314e8421ebf8b816205c97f79",
