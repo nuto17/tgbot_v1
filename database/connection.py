@@ -4,7 +4,7 @@ async def get_connection():
     conn = await asyncpg.connect(
         user="postgres",
         password="123",
-        database="telega_nuto17",
+        database="nuto17base",
         host="localhost",
         port="5432"
     )
