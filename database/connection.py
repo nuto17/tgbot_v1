@@ -1,5 +1,5 @@
 import asyncpg
-
+import asyncio
 async def get_connection():
     conn = await asyncpg.connect(
         user="postgres",

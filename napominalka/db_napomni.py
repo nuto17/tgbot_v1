@@ -1,7 +1,10 @@
+import sys
+import os
 import asyncpg
 import asyncio
+# Добавляем путь к корневой папке проекта в sys.path
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
 from database.connection import get_connection
-
 async def create_database_and_table():
     # Подключение к базе данных Postgres
     conn = await asyncpg.connect(user='postgres', password='123', host='127.0.0.1', port='5432', database='postgres')
