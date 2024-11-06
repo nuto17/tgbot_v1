@@ -7,7 +7,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
 from database.connection import get_connection
 async def create_database_and_table():
     # Подключение к базе данных Postgres
-    conn = await asyncpg.connect(user='postgres', password='123', host='127.0.0.1', port='5432', database='postgres')
+    conn = await asyncpg.connect(user='postgres', password='123', host='127.0.0.1', port='5432', database='nuto17base')
 
     # Создание базы данных (если она еще не создана)
     try:
