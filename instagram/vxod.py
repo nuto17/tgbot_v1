@@ -1,7 +1,12 @@
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
 from instagrapi import Client
 import os
 import logging
 from dotenv import load_dotenv
+
+# Загрузка переменных окружения
 load_dotenv()
 
 # Настраиваем логирование
@@ -9,7 +14,7 @@ logging.basicConfig(level=logging.INFO)
 
 # Путь к файлу с cookies
 session_file_path = "instagram/session.json"
-password= os.getenv('password_inst')
+password = os.getenv('password_inst')
 
 client = Client()
 
@@ -28,7 +33,7 @@ if os.path.exists(session_file_path):
         logging.info("Логин успешен и cookies сохранены.")
 else:
     # Если cookies нет, выполняем стандартный вход
-    client.login("nuto17_", "Semeniuta10")
+    client.login("nuto17_", password)
     client.dump_settings(session_file_path)
     logging.info("Логин успешен и cookies сохранены.")
 
@@ -51,18 +56,58 @@ else:
     logging.info(f"Выбрана коллекция: '{selected_collection.name}'")
 
     # Получаем медиа из коллекции
-    medias = client.collection_medias(selected_collection.id, amount=5)
+    medias = client.collection_medias(selected_collection.id, amount=15)
 
-    # Папка для сохранённых видео
-    download_folder = "video"
+    # Работа с Google Drive
+    service_account_file = '/Users/nuto17/Downloads/Reels from Nuto17bot.json'
+
+    SCOPES = ['https://www.googleapis.com/auth/drive']  # Права необходимые
+
+    creds = service_account.Credentials.from_service_account_file(service_account_file, scopes=SCOPES)
+
+    service = build('drive', 'v3', credentials=creds)
+
+    drive_folder_id = '17vhDSa2SEdnpQ5ZtDY_CxZAGAXfyA4qV'
+
+    # Папка для временных скачиваний
+    download_folder = "temp_downloads"
     if not os.path.exists(download_folder):
         os.makedirs(download_folder)
 
-    # Скачиваем рилсы из коллекции
+
+# Получаем список существующих файлов на Google Drive
+    existing_files = service.files().list(q=f"'{drive_folder_id}' in parents", fields="files(name)").execute()
+    existing_file_names = [file['name'] for file in existing_files.get('files', [])]
+
+
     for media in medias:
-        if media.media_type == 2:  # Тип 2 — это видео (включая рилсы)
+        if media.media_type == 2:
             try:
-                path = client.clip_download(media.pk, folder=download_folder)
-                logging.info(f"Рилс скачан по пути: {path}")
+                reel_filename=f"{media.pk}.mp4"
+                if reel_filename in existing_file_names:
+                    logging.info(f"рилс {reel_filename} уже есть на диске")
+                    continue
+                
+                # Скачиваем видео в локальную папку
+                downloaded_path = client.video_download(media.pk, folder=download_folder)
+                
+                # Загружаем видео на Google Drive
+                file_metadata = {
+                    'name': f"{media.pk}.mp4",
+                    'parents': [drive_folder_id]
+                }
+
+                media_body = MediaFileUpload(downloaded_path, mimetype='video/mp4')
+                uploaded_file = service.files().create(
+                    body=file_metadata,
+                    media_body=media_body,
+                    fields='id'
+                ).execute()
+
+                logging.info(f"Видео {media.pk} успешно загружено на Google Drive, ID: {uploaded_file.get('id')}")
+
+                # Удаляем локальный файл после загрузки
+                os.remove(downloaded_path)
+
             except Exception as e:
-                logging.error(f"Ошибка при скачивании рилса: {e}")
+                logging.error(f"Ошибка при обработке видео {media.pk}: {e}")
