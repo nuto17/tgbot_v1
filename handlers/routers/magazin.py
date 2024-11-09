@@ -9,13 +9,13 @@ def register(router):
         
     @router.callback_query(lambda callback: callback.data == 'pyat')
     async def karta_5(callback: CallbackQuery):
-        image=FSInputFile('/Users/nuto17/Downloads/123/image_karti_magazinov/5terka.jpeg')
+        image=FSInputFile('/Users/nuto17/123/image_karti_magazinov/5terka.jpeg')
         await callback.message.answer_photo(image)
         await callback.answer()
         
     @router.callback_query(lambda callback: callback.data == 'magnit')
     async def karta_5(callback: CallbackQuery):
-        image=FSInputFile('/Users/nuto17/Downloads/123/image_karti_magazinov/magnit.jpeg')
+        image=FSInputFile('/Users/nuto17/123/image_karti_magazinov/magnit.jpeg')
         await callback.message.answer_photo(image)
         await callback.answer()
 
