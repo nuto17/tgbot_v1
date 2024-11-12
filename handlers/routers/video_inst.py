@@ -7,7 +7,7 @@ import logging
 from instagram.func_video import get_video
 import io
 
-service_account_file = '/Users/nuto17/Downloads/Reels from Nuto17bot.json'
+service_account_file = 'instagram/disk.json'
 
 SCOPES = ['https://www.googleapis.com/auth/drive']  # Права необходимые
 
