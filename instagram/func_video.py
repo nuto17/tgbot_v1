@@ -4,10 +4,11 @@ import logging
 import random
 import io
 from googleapiclient.http import MediaIoBaseDownload
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
-service_account_file ='123/file with json/Reels from Nuto17bot.json'
+service_account_file ='instagram/disk.json'
 
 SCOPES = ['https://www.googleapis.com/auth/drive']  # Права необходимые
 
