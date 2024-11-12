@@ -1,4 +1,4 @@
-echo "aiofiles==24.1.0
+aiofiles==24.1.0
 aiogram==3.14.0
 aiohappyeyeballs==2.4.3
 aiohttp==3.10.10
@@ -58,4 +58,5 @@ typing_extensions==4.12.2
 tzlocal==5.2
 uritemplate==4.1.1
 urllib3==2.2.3
-yarl==1.17.1" > requirements.txt
+yarl==1.17.1
+
