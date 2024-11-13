@@ -6,3 +6,4 @@ Yan_api_indef=os.getenv('Yan_Api_indef')
 TOKEN=os.getenv('TOKEN')
 API_WEATHER=os.getenv('OpenWeather_API')
 pass_nuto17=os.getenv('password_inst')
+
