@@ -1,10 +1,15 @@
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
-from googleapiclient.http import MediaFileUpload
+from googleapiclient.http import MediaIoBaseUpload
 from instagrapi import Client
 import os
 import logging
 from dotenv import load_dotenv
+from io import BytesIO
+import concurrent.futures
+import google.auth.exceptions
+from tenacity import retry,stop_after_attempt,wait_fixed,retry_if_exception_type
+
 
 # Загрузка переменных окружения
 load_dotenv()
@@ -56,7 +61,7 @@ else:
     logging.info(f"Выбрана коллекция: '{selected_collection.name}'")
 
     # Получаем медиа из коллекции
-    medias = client.collection_medias(selected_collection.id, amount=15)
+    medias = client.collection_medias(selected_collection.id, amount=50)
 
     # Работа с Google Drive
     service_account_file = 'instagram/disk.json'
@@ -69,35 +74,31 @@ else:
 
     drive_folder_id = '17vhDSa2SEdnpQ5ZtDY_CxZAGAXfyA4qV'
 
-    # Папка для временных скачиваний
-    download_folder = "temp_downloads"
-    if not os.path.exists(download_folder):
-        os.makedirs(download_folder)
-
-
-# Получаем список существующих файлов на Google Drive
-    existing_files = service.files().list(q=f"'{drive_folder_id}' in parents", fields="files(name)").execute()
-    existing_file_names = [file['name'] for file in existing_files.get('files', [])]
-
-
-    for media in medias:
+@retry(stop=stop_after_attempt(3), wait=wait_fixed(5),retry=retry_if_exception_type(google.auth.exceptions.TransportError))
+def skachka(media):
         if media.media_type == 2:
             try:
-                reel_filename=f"{media.pk}.mp4"
-                if reel_filename in existing_file_names:
-                    logging.info(f"рилс {reel_filename} уже есть на диске")
-                    continue
+                reel_filename = f"{media.pk}.mp4"
+
+                # Проверка наличия файла в Google Drive по названию
+                query = f"name = '{reel_filename}' and '{drive_folder_id}' in parents"
+                existing_files = service.files().list(q=query, fields="files(name)").execute()
+                if existing_files.get('files'):
+                    logging.info(f"Рилс {reel_filename} уже есть на диске.")
+                    return
                 
-                # Скачиваем видео в локальную папку
-                downloaded_path = client.video_download(media.pk, folder=download_folder)
+                # Скачиваем видео в байтовый объект
+                reel_video = client.video_download(media.pk, folder="temp_downloads")
+                with open(reel_video, "rb") as f:
+                    file_bytes = BytesIO(f.read())
                 
                 # Загружаем видео на Google Drive
                 file_metadata = {
-                    'name': f"{media.pk}.mp4",
+                    'name': reel_filename,
                     'parents': [drive_folder_id]
                 }
 
-                media_body = MediaFileUpload(downloaded_path, mimetype='video/mp4')
+                media_body = MediaIoBaseUpload(file_bytes, mimetype='video/mp4')
                 uploaded_file = service.files().create(
                     body=file_metadata,
                     media_body=media_body,
@@ -105,9 +106,10 @@ else:
                 ).execute()
 
                 logging.info(f"Видео {media.pk} успешно загружено на Google Drive, ID: {uploaded_file.get('id')}")
-
-                # Удаляем локальный файл после загрузки
-                os.remove(downloaded_path)
-
+                os.remove(reel_video)
             except Exception as e:
                 logging.error(f"Ошибка при обработке видео {media.pk}: {e}")
+with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+    executor.map(skachka,medias)
+
+
