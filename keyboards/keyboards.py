@@ -55,3 +55,13 @@ karti_magaz=InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='пятерочка',callback_data='pyat')],
     [InlineKeyboardButton(text='магнит',callback_data='magnit')]
 ])
+ai_mode=InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text="Включить Ai-mode", callback_data='on')],
+    [InlineKeyboardButton(text="Оставить команды бота",callback_data='off')]
+])
+vkluch=InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text="выключить",callback_data='off')]
+])
+vikluch=InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text="включить",callback_data='on')]
+])
